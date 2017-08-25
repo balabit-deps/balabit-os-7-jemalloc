@@ -1,0 +1,28 @@
+Description: Add support for Hurd
+ Add support to configure.ac for GNU Hurd, per
+ https://www.gnu.org/software/hurd/hurd/porting/guidelines.html
+Author: Faidon Liambotis <paravoid@debian.org>
+Bug: #828871
+Forwarded: no
+Last-Update: 2017-08-05
+
+--- a/configure.ac
++++ b/configure.ac
+@@ -269,7 +269,16 @@ case "${host}" in
+ 	AC_DEFINE([JEMALLOC_PURGE_MADVISE_FREE], [ ])
+ 	force_lazy_lock="1"
+ 	;;
+-  *-*-linux*)
++  *-*-kfreebsd*)
++	CFLAGS="$CFLAGS"
++	CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE"
++	abi="elf"
++	AC_DEFINE([JEMALLOC_HAS_ALLOCA_H])
++	AC_DEFINE([JEMALLOC_PURGE_MADVISE_FREE], [ ])
++	AC_DEFINE([JEMALLOC_THREADED_INIT], [ ])
++	JEMALLOC_USABLE_SIZE_CONST=""
++	;;
++  *-*-linux* | *-*-gnu*)
+ 	CFLAGS="$CFLAGS"
+ 	CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE"
+ 	abi="elf"

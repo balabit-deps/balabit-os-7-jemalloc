@@ -1,0 +1,36 @@
+From b123ddc760e5b53dde17c6a19a130173067c0e30 Mon Sep 17 00:00:00 2001
+From: Jason Evans <jasone@canonware.com>
+Date: Wed, 8 Oct 2014 18:18:03 -0700
+Subject: [PATCH] Don't configure HAVE_SSE2.
+
+Don't configure HAVE_SSE2 (on behalf of SFMT), because its dependencies
+are notoriously unportable in practice.
+
+This resolves #119.
+
+--- a/configure.ac
++++ b/configure.ac
+@@ -201,8 +201,6 @@ AC_CANONICAL_HOST
+ dnl CPU-specific settings.
+ CPU_SPINWAIT=""
+ case "${host_cpu}" in
+-  i[[345]]86)
+-	;;
+   i686|x86_64)
+ 	JE_COMPILABLE([pause instruction], [],
+ 	              [[__asm__ volatile("pause"); return 0;]],
+@@ -210,14 +208,6 @@ case "${host_cpu}" in
+ 	if test "x${je_cv_pause}" = "xyes" ; then
+ 	    CPU_SPINWAIT='__asm__ volatile("pause")'
+ 	fi
+-	dnl emmintrin.h fails to compile unless MMX, SSE, and SSE2 are
+-	dnl supported.
+-	JE_COMPILABLE([SSE2 intrinsics], [
+-#include <emmintrin.h>
+-], [], [je_cv_sse2])
+-	if test "x${je_cv_sse2}" = "xyes" ; then
+-	  AC_DEFINE_UNQUOTED([HAVE_SSE2], [ ])
+-	fi
+ 	;;
+   powerpc)
+ 	AC_DEFINE_UNQUOTED([HAVE_ALTIVEC], [ ])

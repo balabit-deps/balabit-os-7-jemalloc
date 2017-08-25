@@ -1,0 +1,3 @@
+configure-VERSION.patch
+disable-HAVE_SSE2.patch
+hurd-kfreebsd.patch

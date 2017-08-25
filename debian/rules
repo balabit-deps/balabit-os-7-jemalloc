@@ -1,0 +1,56 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+export DH_VERBOSE=1
+
+include /usr/share/dpkg/architecture.mk
+include /usr/share/dpkg/pkg-info.mk
+
+ifneq (,$(findstring $(DEB_HOST_ARCH),sh3 sparc sparc64))
+  DEB_CPPFLAGS_MAINT_APPEND += -DLG_QUANTUM=4
+endif
+
+ifneq (,$(findstring $(DEB_HOST_ARCH),m68k nios2 or1k))
+  DEB_CPPFLAGS_MAINT_APPEND += -DLG_QUANTUM=3
+endif
+
+ifneq (,$(findstring $(DEB_HOST_ARCH),powerpc))
+  DEB_CPPFLAGS_MAINT_APPEND += -maltivec
+endif
+
+ifeq ($(DEB_HOST_ARCH_OS),hurd)
+  # Fake a PATH_MAX when building on Hurd to keep jemalloc happy
+  DEB_CPPFLAGS_MAINT_APPEND += -DPATH_MAX=8192
+endif
+
+DEB_CFLAGS_MAINT_APPEND += -std=gnu99
+
+export DEB_CFLAGS_MAINT_APPEND DEB_CPPFLAGS_MAINT_APPEND
+
+# dh 10 calls autoreconf, and autoreconf calls autoheader if AC_CONFIG_HEADERS
+# is used Upstream, however, uses multiple hand-crafted config headers, which
+# makes autoheader fail. Override with /bin/true.
+export AUTOHEADER = /bin/true
+
+# suppress Address Sanitizer alignment checks, cf. #812874
+export ASAN_OPTIONS = suppressions=$(CURDIR)/debian/asan-suppressions.txt
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	# upstream configure sets it from git describe, override
+	echo $(DEB_VERSION) > VERSION
+	dh_auto_configure
+
+override_dh_auto_build:
+	make all dist
+
+override_dh_auto_clean:
+	dh_auto_clean
+	-rm -f doc/jemalloc.3 doc/jemalloc.html VERSION
+	-rmdir lib/ test/stress
+
+override_dh_strip:
+	dh_strip -p libjemalloc1 --dbgsym-migration='libjemalloc1-dbg (<= 3.6.0-9)'
+	dh_strip -a --remaining-packages

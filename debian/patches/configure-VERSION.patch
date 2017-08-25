@@ -1,0 +1,18 @@
+Description: Don't generate VERSION from git describe
+Author: Faidon Liambotis <paravoid@debian.org>
+Forwarded: no
+Last-Update: 2017-08-06
+
+--- a/configure.ac
++++ b/configure.ac
+@@ -1024,10 +1024,6 @@ dnl ====================================
+ dnl jemalloc configuration.
+ dnl 
+ 
+-dnl Set VERSION if source directory has an embedded git repository.
+-if test -d "${srcroot}.git" ; then
+-  git describe --long --abbrev=40 > ${srcroot}VERSION
+-fi
+ jemalloc_version=`cat ${srcroot}VERSION`
+ jemalloc_version_major=`echo ${jemalloc_version} | tr ".g-" " " | awk '{print [$]1}'`
+ jemalloc_version_minor=`echo ${jemalloc_version} | tr ".g-" " " | awk '{print [$]2}'`
